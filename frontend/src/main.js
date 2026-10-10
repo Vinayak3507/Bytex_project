@@ -8,19 +8,6 @@ import { hasHostAccessToken } from './services/hostAuth.js';
 import { navigate, resolveRoute } from './services/router.js';
 
 const app = document.querySelector('#app');
-<<<<<<< HEAD
-let clock;
-let revealTimer;
-
-function render() {
-  clearInterval(clock);
-  clearTimeout(revealTimer);
-  const { state } = game;
-  app.innerHTML = state.screen === 'home' ? Home(state) : state.screen === 'join' ? JoinRoom(state) : ActiveRoom(state);
-  bind();
-  if (state.screen === 'game' && state.selected === null) clock = setInterval(() => game.tick(), 1000);
-  if (state.screen === 'game' && state.phase === 'playing' && state.selected !== null) revealTimer = setTimeout(() => game.showLeaderboard(), 1450);
-=======
 function render() {
   const path = location.pathname;
   const route = resolveRoute(path, hasHostAccessToken());
@@ -43,7 +30,6 @@ function render() {
     app.innerHTML = state.screen === 'home' ? Home(state) : state.screen === 'join' ? JoinRoom(state) : ActiveRoom(state);
   }
   bind();
->>>>>>> 5c03288 (Build host auth and custom quiz builder)
 }
 
 function bind() {
@@ -54,13 +40,6 @@ function bind() {
   document.querySelectorAll('[data-screen]').forEach(button => button.addEventListener('click', () => game.update({ screen: button.dataset.screen })));
   document.querySelectorAll('[data-action="host"]').forEach(button => button.addEventListener('click', () => navigate(hasHostAccessToken() ? '/host' : '/host/login')));
   document.querySelectorAll('[data-action="start"]').forEach(button => button.addEventListener('click', () => game.start()));
-<<<<<<< HEAD
-  document.querySelectorAll('[data-action="rematch"]').forEach(button => button.addEventListener('click', () => { game.resetMatch(); game.start(); }));
-  document.querySelectorAll('[data-action="next-question"]').forEach(button => button.addEventListener('click', () => game.next()));
-  document.querySelectorAll('[data-action="toast"]').forEach(button => button.addEventListener('click', () => game.update({ reaction:'Season standings unlock after the next clash!' })));
-  document.querySelectorAll('[data-answer]').forEach(button => button.addEventListener('click', () => game.selectAnswer(Number(button.dataset.answer))));
-  document.querySelectorAll('[data-react]').forEach(button => button.addEventListener('click', () => game.update({ reaction:`${button.dataset.react} ${game.state.name} brought the energy!` })));
-=======
   document.querySelectorAll('[data-action="next-question"]').forEach(button => button.addEventListener('click', () => game.nextQuestion()));
   document.querySelectorAll('[data-action="leave"]').forEach(button => button.addEventListener('click', () => game.leave()));
   document.querySelectorAll('[data-action="host-leave-room"]').forEach(button => button.addEventListener('click', () => hostStore.leaveRoom()));
@@ -130,7 +109,6 @@ function bind() {
     const form = new FormData(authForm);
     hostStore.authenticate(String(form.get('email') || '').trim(), String(form.get('password') || ''), location.pathname === '/host/register' ? 'register' : 'login');
   });
->>>>>>> 5c03288 (Build host auth and custom quiz builder)
   const form = document.querySelector('#join-form');
   if (form) form.addEventListener('submit', event => {
     event.preventDefault();

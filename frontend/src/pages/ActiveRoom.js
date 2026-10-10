@@ -6,12 +6,8 @@ import { LeaderboardRow } from '../components/LeaderboardRow.js';
 import { burst } from '../components/ui.js';
 import { escapeHtml } from '../components/escapeHtml.js';
 
-<<<<<<< HEAD
-const Header = (label, labelClass='') => `<header class="game-header"><button class="logo" data-screen="home"><span>✦</span>QUIZ<b>RIFT</b></button><div class="round-status ${labelClass}"><i></i>${label}</div><button class="leave" data-screen="home">LEAVE ✕</button></header>`;
-=======
 const errorBanner = (state) => state.error ? `<p class="integration-error" role="alert">${escapeHtml(state.error)}</p>` : '';
 const Header = (label, labelClass='') => `<header class="game-header"><button class="logo" data-action="leave"><span>✦</span>apti<b>quiz</b></button><div class="round-status ${labelClass}"><i></i>${label}</div><button class="leave" data-action="leave">LEAVE ✕</button></header>`;
->>>>>>> 5c03288 (Build host auth and custom quiz builder)
 
 export function Lobby(state) {
   const players = state.players.map((player) => ({ ...player, answered: false }));
@@ -36,9 +32,13 @@ export function Results(state) {
 
 export function RoundLeaderboard(state) {
   const sorted = [...state.players].sort((a,b)=>b.score-a.score);
-  const rank = sorted.findIndex(player=>player.id==='you')+1;
-  const lastQuestion = state.questionIndex === state.questions.length - 1;
-  return `${Header(`QUESTION ${state.questionIndex+1} RESULTS`, 'complete')}<main class="results-page"><section class="results-hero"><div class="winner-crown">⚡</div><p>EVERY ANSWER IS IN</p><h1>ROUND <em>RANKINGS</em></h1><span>You placed #${rank} after question ${state.questionIndex+1}. Here are the updated standings for all ${sorted.length} players.</span></section><section class="panel final-board"><div class="panel-title"><div><p>LIVE ROOM STANDINGS</p><h2>Room ${state.roomCode}</h2></div><span>${sorted.length} PLAYERS</span></div>${sorted.map((player,index)=>LeaderboardRow(player,index+1,player.id==='you')).join('')}</section><div class="result-actions"><button class="action lime" data-action="next-question">${lastQuestion?'VIEW FINAL RESULTS':'NEXT QUESTION →'}</button></div></main>`;
+  const rank = sorted.findIndex((player) => player.id === state.currentPlayerId) + 1;
+  const lastQuestion = state.questionIndex + 1 >= state.totalQuestions;
+  const nextAction = state.isHost
+    ? `<button class="action lime" data-action="next-question" ${state.busy ? 'disabled' : ''}>${state.busy ? 'PLEASE WAIT…' : lastQuestion ? 'VIEW FINAL RESULTS' : 'NEXT QUESTION →'}</button>`
+    : '<div class="wait-note"><i></i> WAITING FOR THE HOST TO CONTINUE</div>';
+  const placement = state.isHost ? 'The updated standings are ready for every participant.' : `You placed #${rank || '—'} after question ${state.questionIndex + 1}.`;
+  return `${Header(`QUESTION ${state.questionIndex+1} RESULTS`, 'complete')}${errorBanner(state)}<main class="results-page"><section class="results-hero"><div class="winner-crown">⚡</div><p>EVERY ANSWER IS IN</p><h1>ROUND <em>RANKINGS</em></h1><span>${placement} Only correct answers earn points; skipped and incorrect answers earn zero.</span></section><section class="panel final-board"><div class="panel-title"><div><p>LIVE ROOM STANDINGS</p><h2>Room ${escapeHtml(state.roomCode)}</h2></div><span>${sorted.length} PLAYERS</span></div>${sorted.map((player,index)=>LeaderboardRow(player,index+1,player.id===state.currentPlayerId)).join('')}</section><div class="result-actions">${nextAction}</div></main>`;
 }
 
 export function ActiveRoom(state) { if (state.phase === GamePhase.PLAYING) return Game(state); if (state.phase === GamePhase.ROUND_RESULTS) return RoundLeaderboard(state); if (state.phase === GamePhase.RESULTS) return Results(state); return Lobby(state); }

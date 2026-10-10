@@ -1,10 +1,6 @@
 # QUIZRIFT frontend
 
-<<<<<<< HEAD
-The frontend is a standalone, demo-ready QUIZRIFT experience. It includes the lobby, room join flow, timed match, and live-style leaderboard using mock game data so it can be explored without a backend connection.
-=======
-The frontend uses the AptiQuiz REST and Socket.IO backend for host registration/login, custom quiz drafts, editing, preview, publishing, room management, synchronized questions, answer acceptance, scoring, and results. Host quiz routes (`/host/quiz/:id/edit` and `/host/quiz/:id/preview`) are separate from participant join and game screens.
->>>>>>> 5c03288 (Build host auth and custom quiz builder)
+QUIZRIFT uses the REST and Socket.IO backend for host registration and login, custom quiz drafts, editing, preview, publishing, room management, synchronized questions, answer acceptance, scoring, and results. Host quiz routes (`/host/quiz/:id/edit` and `/host/quiz/:id/preview`) are separate from participant join and game screens.
 
 ## Run locally
 

@@ -7,7 +7,7 @@ import { registerSocketHandlers } from './socket/register-handlers.js';
 import { createStore } from './store/index.js';
 
 const port = Number(process.env.PORT ?? 3001);
-const clientOrigin = process.env.CLIENT_ORIGIN ?? 'http://localhost:4173,http://localhost:5173';
+const clientOrigin = process.env.CLIENT_ORIGIN ?? 'http://localhost:4173,http://localhost:4174,http://localhost:5173';
 const store = createStore();
 const app = createApp({ store, clientOrigin });
 const server = http.createServer(app);

@@ -33,7 +33,7 @@ Without Supabase environment variables, the server uses in-memory storage for lo
 
 Host passwords are hashed with Node's scrypt implementation. Login issues an opaque, eight-hour bearer session; only its SHA-256 hash is stored by the backend. The browser keeps the bearer token in tab-scoped `sessionStorage`. Use HTTPS in deployment. Protected API requests use `Authorization: Bearer …`; host Socket.IO identity is verified from the connection handshake, never from event payloads.
 
-The server runs at `http://localhost:3001` by default and allows local frontend origins on ports 4173 and 5173. Set `CLIENT_ORIGIN` to the frontend origin (comma-separated for multiple origins) when deploying. The frontend and backend must be reachable by each player's browser.
+The server runs at `http://localhost:3001` by default and allows local frontend origins on ports 4173, 4174, and 5173. Set `CLIENT_ORIGIN` to the frontend origin (comma-separated for multiple origins) when deploying. The frontend and backend must be reachable by each player's browser.
 
 See [`docs/architecture.md`](docs/architecture.md) for the REST, authentication, and Socket.IO contracts. Backend tests cover registration/login/logout, ownership checks, host/player role separation, room creation, server-timed rounds, answer submission, and withholding correct answers until a round closes.
 

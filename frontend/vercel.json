@@ -1,0 +1,18 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "outputDirectory": ".",
+  "rewrites": [
+    {
+      "source": "/runtime-config.js",
+      "destination": "/api/runtime-config"
+    },
+    {
+      "source": "/host",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/host/:path*",
+      "destination": "/index.html"
+    }
+  ]
+}

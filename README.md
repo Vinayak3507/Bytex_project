@@ -1,25 +1,88 @@
+# README
+
 # AptiQuiz — AI Hackathon 2026
 
-AptiQuiz is a live, multiplayer aptitude quiz built around college competition. Hosts register and sign in to a dedicated dashboard, create a quiz room, and run it from a host-only control screen. Students join with a short code or link. The server owns question timing, answer acceptance, scoring, and standings.
+AptiQuiz is a live, multiplayer aptitude quiz platform designed for college competitions and hackathons. Hosts create and publish quizzes from a private dashboard; participants join a live room using a short code or link. The backend is authoritative for question timing, answer acceptance, scoring, and standings.
 
-## Current frontend
+**Current milestone:** end-to-end deployment with host authentication, quiz drafting and publishing, persistent Supabase storage, and live multiplayer room flows.
 
-The `frontend/` folder contains separate host authentication, quiz dashboard/editor/preview, and live-room pages alongside participant join/lobby/question/results pages. Host routes include `/host/register`, `/host/login`, `/host`, `/host/quiz/:id/edit`, `/host/quiz/:id/preview`, and `/host/room/:joinCode`.
+## Live deployment
 
-Run it with Node.js (no package installation is required). Start the backend in a separate terminal first:
+- **Participant and host app:** https://bytex-project.vercel.app
+- **Backend API:** https://aptiquiz-bytex-api.onrender.com
+- **Repository:** https://github.com/Vinayak3507/Bytex_project
 
-```bash
-cd frontend
-npm start
+The frontend is deployed on Vercel, the Node.js API and Socket.IO server run on Render, and Supabase Postgres provides persistent storage. Render’s free service may spin down after inactivity, so the first request after a quiet period can take longer. For a live demonstration, open the app and verify that the backend is responsive before participants join.
+
+## Features implemented
+
+### Host accounts and dashboard
+
+- Host registration, login, and logout.
+- Owner-scoped quiz management and protected host endpoints.
+- Password hashing with Node.js `scrypt`.
+- Opaque eight-hour bearer sessions; only token hashes are stored by the backend.
+- The browser stores the active token in tab-scoped `sessionStorage`.
+
+### Quiz authoring and publishing
+
+- Create incomplete quiz drafts and return to edit them.
+- Add and reorder multiple-choice questions and configure options.
+- Configure quiz defaults and per-question duration and marks.
+- Preview the participant-facing quiz before publishing.
+- Publish valid quizzes; only published quizzes can be used to create rooms.
+- Store a snapshot of the quiz when a room is created, preventing later edits to the source quiz from changing an active room’s questions or scoring.
+
+### Live multiplayer quiz
+
+- Participants join a room using its join code or link and move through lobby, question, and results screens.
+- Socket.IO carries real-time room events.
+- The server controls round timing, answer acceptance, scoring, and standings.
+- Correct answers are withheld until the round closes.
+- Host and participant roles are separated, and host Socket.IO identity is verified during connection setup rather than trusted from event payloads.
+
+### Persistence and security
+
+- Supabase Postgres storage for host accounts, sessions, quizzes, questions, rooms, participants, and answers.
+- SQL migrations in `supabase/migrations/` define the current database schema.
+- Local development can use in-memory storage when Supabase environment variables are absent; that data resets when the server restarts.
+- Secrets stay on the backend. Never expose `SUPABASE_SERVICE_ROLE_KEY` in frontend code or commit real credentials.
+
+## Tech stack
+
+| Layer | Technologies |
+| --- | --- |
+| Frontend | HTML, CSS, vanilla JavaScript, Node.js runtime configuration server |
+| Backend | Node.js 22+, Express, Socket.IO |
+| Database | Supabase Postgres |
+| Hosting | Vercel (frontend), Render (backend), Supabase (database) |
+
+The frontend is plain JavaScript, not a Vite bundle, and has no separate build step.
+
+## Project structure
+
+```
+.
+├── frontend/                 # Host UI, quiz editor, participant pages
+│   ├── api/                  # Vercel runtime configuration endpoint
+│   └── vercel.json           # Vercel routing and runtime configuration
+├── backend/                  # Express API and Socket.IO server
+├── supabase/
+│   └── migrations/           # Database schema and incremental migrations
+├── docs/
+│   └── architecture.md       # REST, authentication, and Socket.IO contracts
+└── render.yaml               # Render Blueprint configuration
 ```
 
-Open the URL printed by the server, normally `http://localhost:4173`. The server also prints a LAN URL for testing from another device on the same Wi-Fi. If port 4173 is occupied, run `node server.js 5000`.
+Host routes include `/host/register`, `/host/login`, `/host`, `/host/quiz/:id/edit`, `/host/quiz/:id/preview`, and `/host/room/:joinCode`.
 
-The frontend defaults to `http://localhost:3001` for its REST and Socket.IO server. Set `BACKEND_URL` when starting the frontend server to use a different backend URL.
+## Run locally
 
-## Backend and database
+Requirements: Node.js 22 or later and npm.
 
-The backend requires Node.js 22+ and uses Express, Socket.IO, and Supabase Postgres. It loads `backend/.env` locally when present; shell environment variables take precedence.
+### 1. Backend
+
+From the repository root:
 
 ```bash
 cd backend
@@ -29,32 +92,84 @@ npm test
 npm run dev
 ```
 
-Without Supabase environment variables, the server uses in-memory storage for local integration; accounts, sessions, quizzes, and rooms reset when the server restarts. For persistent storage, apply all migrations in `supabase/migrations/` in filename order, then set `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` in `backend/.env`. Keep the service-role key on the backend only. The migrations add host accounts/ownership and custom quiz drafts, question settings, and room snapshots.
+The backend listens on `http://localhost:3001` by default. For persistent local data, configure the Supabase variables below and apply the SQL migrations. Without them, the server uses in-memory storage for development and integration testing.
 
-Host passwords are hashed with Node's scrypt implementation. Login issues an opaque, eight-hour bearer session; only its SHA-256 hash is stored by the backend. The browser keeps the bearer token in tab-scoped `sessionStorage`. Use HTTPS in deployment. Protected API requests use `Authorization: Bearer …`; host Socket.IO identity is verified from the connection handshake, never from event payloads.
+### 2. Frontend
 
-The server runs at `http://localhost:3001` by default and allows local frontend origins on ports 4173, 4174, and 5173. Set `CLIENT_ORIGIN` to the frontend origin (comma-separated for multiple origins) when deploying. The frontend and backend must be reachable by each player's browser.
+In a separate terminal, from the repository root:
 
-See [`docs/architecture.md`](docs/architecture.md) for the REST, authentication, and Socket.IO contracts. Backend tests cover registration/login/logout, ownership checks, host/player role separation, room creation, server-timed rounds, answer submission, and withholding correct answers until a round closes.
+```bash
+cd frontend
+npm start
+```
 
-Hosts can create incomplete drafts, author and reorder multiple-choice questions, configure quiz defaults and per-question duration/marks, preview the participant-facing view, and publish. Only published, valid quizzes can create rooms. A room captures a quiz snapshot when created, so later source edits cannot change its questions or scoring. See [`docs/architecture.md`](docs/architecture.md) for REST, authentication, and Socket.IO contracts.
+Open the URL printed by the server, normally `http://localhost:4173`. The server also prints a LAN URL for testing from another device on the same Wi-Fi. If port 4173 is occupied, you can run `node server.js 5000`.
 
-The frontend is plain JavaScript served by Node (not a Vite bundle), so use `npm test` in `frontend/` and open the local server for UI verification; there is no separate frontend build command.
+The local frontend defaults to `http://localhost:3001` for REST and Socket.IO. Set `BACKEND_URL` when starting the frontend server to point to a different backend URL.
 
-## Deployment
+## Environment variables and database setup
 
-The repository includes [`render.yaml`](render.yaml) for a two-service Render deployment. The backend is a persistent Node.js web service because Socket.IO needs long-lived connections. The frontend is also served by Node so it can inject `BACKEND_URL` at runtime.
+For local persistent storage, set these in `backend/.env`:
 
-1. Push the latest `main` branch to GitHub.
-2. In the [Render Blueprint dashboard](https://dashboard.render.com/blueprints), create a Blueprint from `Vinayak3507/Bytex_project` and select `render.yaml`.
-3. Render creates `quizrift-bytex-api` and `quizrift-bytex-web`. When prompted, set `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` on the API service. Apply the SQL migrations in `supabase/migrations/` to that Supabase project first.
-4. Deploy the API service first. Copy its public `https://…onrender.com` URL.
-5. Set `BACKEND_URL` on the web service to that API URL, then set `CLIENT_ORIGIN` on the API service to the web service's public URL. Redeploy both services after saving these values.
-6. Open the web service URL, create a host account, publish a quiz, and join a room from a second browser or device to verify the live flow.
+| Variable | Purpose |
+| --- | --- |
+| `SUPABASE_URL` | Base URL of the Supabase project (not a `/rest/v1/` endpoint) |
+| `SUPABASE_SERVICE_ROLE_KEY` | Private server-side Supabase service-role/secret key |
+| `CLIENT_ORIGIN` | Allowed frontend origin(s), comma-separated when needed |
+| `PORT` | Optional backend port; defaults to `3001` locally |
 
-Never add Supabase credentials to Git, `render.yaml`, or frontend environment variables. Render Web Services accept public WebSocket connections, which is required by the live room experience. [Render’s Blueprint reference](https://render.com/docs/blueprint-spec) and [WebSocket documentation](https://render.com/docs/websocket) describe these settings.
+Apply every SQL file under `supabase/migrations/` in filename order to the Supabase project before relying on persistent storage. The migrations cover the core quiz schema, host authentication and ownership, custom quiz building, and support for untitled drafts.
+
+Shell environment variables take precedence over values loaded from `backend/.env`. Use HTTPS for deployed environments. Protected API requests use `Authorization: Bearer …`. Never commit real environment files or place the service-role key in Vercel/frontend settings.
+
+## Tests and architecture
+
+Run backend tests with `npm test` from `backend/` and frontend tests with `npm test` from `frontend/`.
+
+Backend tests cover registration/login/logout, ownership checks, host/player role separation, room creation, server-timed rounds, answer submission, and withholding correct answers until a round closes. See `docs/architecture.md` for REST endpoints, authentication, and Socket.IO contracts.
+
+## Deployment notes
+
+The current deployment uses **Vercel for the frontend** and **Render for the backend**, with Supabase for persistent database storage.
+
+- Vercel project root: `frontend`; framework preset: `Other`; output directory: `.`.
+- Set the Vercel environment variable `BACKEND_URL` to `https://aptiquiz-bytex-api.onrender.com`.
+- On Render, set `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` on the backend service.
+- Set `CLIENT_ORIGIN` on Render to include `https://bytex-project.vercel.app` (and any required local development origins).
+- Apply new database migrations to Supabase when a feature adds or changes schema; deploying application code alone does not apply SQL migrations automatically.
+
+The repository also includes `render.yaml` as a Blueprint for a two-service Render deployment. That configuration can be used if you choose to host both frontend and backend on Render instead; in that setup, configure `BACKEND_URL` on the frontend service and `CLIENT_ORIGIN` on the API service to match the deployed frontend origin.
+
+For more details, see Render Blueprint configuration and Render WebSocket support.
+
+## Roadmap — planned future updates
+
+These are potential next steps, not features currently claimed as implemented.
+
+### Product improvements
+
+- [ ]  Quiz categories, tags, search, and reusable question banks.
+- [ ]  Bulk question import/export (CSV or spreadsheet templates).
+- [ ]  More question types, such as true/false and numeric answers.
+- [ ]  Configurable scoring modes, negative marking, and answer explanations.
+- [ ]  Scheduled quizzes, waiting-room controls, and host moderation tools.
+- [ ]  Quiz history, participant reports, and downloadable results.
+
+### Platform and reliability
+
+- [ ]  Reconnection recovery for participants and hosts during network interruptions.
+- [ ]  Stronger rate limits and abuse protection for public endpoints and room joins.
+- [ ]  Automated database migration workflow and production health monitoring.
+- [ ]  CI checks for tests and deployment validation.
+- [ ]  Accessibility, responsive UI, and browser/device compatibility review.
+
+### AI-assisted features
+
+- [ ]  AI-assisted question generation from a topic or source notes, with host review before publishing.
+- [ ]  Difficulty suggestions and duplicate-question detection.
+- [ ]  AI-generated explanations and post-quiz learning recommendations.
 
 ## Team
 
-- Frontend: team member 1
-- Backend: team member 2
+- Frontend: Prince Kumar Yadav
+- Backend: Vinayak Dixit

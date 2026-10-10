@@ -2,7 +2,7 @@ import { escapeHtml } from '../components/escapeHtml.js';
 import { TimerBar } from '../components/TimerBar.js';
 
 const errorBlock = (error) => error ? `<p class="integration-error" role="alert">${escapeHtml(error)}</p>` : '';
-const HostHeader = (title, email = '') => `<header class="host-header"><a class="logo" href="/host" data-nav="/host"><span>✦</span>apti<b>quiz</b><small>HOST</small></a><strong>${escapeHtml(title)}</strong><div class="host-header-actions">${email ? `<span>${escapeHtml(email)}</span><button class="text-back" data-action="host-logout">SIGN OUT</button>` : ''}</div></header>`;
+const HostHeader = (title, email = '') => `<header class="host-header"><a class="logo" href="/host" data-nav="/host"><span>✦</span>apti<b>quiz</b><small>HOST</small></a><strong>${escapeHtml(title)}</strong><div class="host-header-actions"><button class="theme-toggle" data-action="theme-toggle" type="button" aria-label="Toggle light and dark theme"><span aria-hidden="true">☾</span><b>THEME</b></button>${email ? `<span>${escapeHtml(email)}</span><button class="text-back" data-action="host-logout">SIGN OUT</button>` : ''}</div></header>`;
 
 export function HostAuthPage(state, mode) {
   const registering = mode === 'register';

@@ -8,6 +8,19 @@ import { hasHostAccessToken } from './services/hostAuth.js';
 import { navigate, resolveRoute } from './services/router.js';
 
 const app = document.querySelector('#app');
+const themeKey = 'quizrift-theme';
+
+const applyTheme = (theme) => {
+  document.documentElement.dataset.theme = theme;
+  try { localStorage.setItem(themeKey, theme); } catch { /* Storage can be disabled by the browser. */ }
+};
+
+try {
+  applyTheme(localStorage.getItem(themeKey) === 'dark' ? 'dark' : 'light');
+} catch {
+  applyTheme('light');
+}
+
 function render() {
   const path = location.pathname;
   const route = resolveRoute(path, hasHostAccessToken());
@@ -39,6 +52,9 @@ function bind() {
   }));
   document.querySelectorAll('[data-screen]').forEach(button => button.addEventListener('click', () => game.update({ screen: button.dataset.screen })));
   document.querySelectorAll('[data-action="host"]').forEach(button => button.addEventListener('click', () => navigate(hasHostAccessToken() ? '/host' : '/host/login')));
+  document.querySelectorAll('[data-action="theme-toggle"]').forEach(button => button.addEventListener('click', () => {
+    applyTheme(document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark');
+  }));
   document.querySelectorAll('[data-action="start"]').forEach(button => button.addEventListener('click', () => game.start()));
   document.querySelectorAll('[data-action="next-question"]').forEach(button => button.addEventListener('click', () => game.nextQuestion()));
   document.querySelectorAll('[data-action="leave"]').forEach(button => button.addEventListener('click', () => game.leave()));

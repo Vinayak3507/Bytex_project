@@ -7,7 +7,7 @@ import { burst } from '../components/ui.js';
 import { escapeHtml } from '../components/escapeHtml.js';
 
 const errorBanner = (state) => state.error ? `<p class="integration-error" role="alert">${escapeHtml(state.error)}</p>` : '';
-const Header = (label, labelClass='') => `<header class="game-header"><button class="logo" data-action="leave"><span>✦</span>apti<b>quiz</b></button><div class="round-status ${labelClass}"><i></i>${label}</div><button class="leave" data-action="leave">LEAVE ✕</button></header>`;
+const Header = (label, labelClass='') => `<header class="game-header"><button class="logo" data-action="leave"><span>✦</span>apti<b>quiz</b></button><div class="round-status ${labelClass}"><i></i>${label}</div><div class="game-header-actions"><button class="theme-toggle" data-action="theme-toggle" type="button" aria-label="Toggle light and dark theme"><span aria-hidden="true">☾</span><b>THEME</b></button><button class="leave" data-action="leave">LEAVE ✕</button></div></header>`;
 
 export function Lobby(state) {
   const players = state.players.map((player) => ({ ...player, answered: false }));

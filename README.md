@@ -43,7 +43,16 @@ The frontend is plain JavaScript served by Node (not a Vite bundle), so use `npm
 
 ## Deployment
 
-The frontend can be served as static files; the backend needs a persistent Node.js service for Socket.IO. Deployment URL: to be added.
+The repository includes [`render.yaml`](render.yaml) for a two-service Render deployment. The backend is a persistent Node.js web service because Socket.IO needs long-lived connections. The frontend is also served by Node so it can inject `BACKEND_URL` at runtime.
+
+1. Push the latest `main` branch to GitHub.
+2. In the [Render Blueprint dashboard](https://dashboard.render.com/blueprints), create a Blueprint from `Vinayak3507/Bytex_project` and select `render.yaml`.
+3. Render creates `quizrift-bytex-api` and `quizrift-bytex-web`. When prompted, set `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` on the API service. Apply the SQL migrations in `supabase/migrations/` to that Supabase project first.
+4. Deploy the API service first. Copy its public `https://…onrender.com` URL.
+5. Set `BACKEND_URL` on the web service to that API URL, then set `CLIENT_ORIGIN` on the API service to the web service's public URL. Redeploy both services after saving these values.
+6. Open the web service URL, create a host account, publish a quiz, and join a room from a second browser or device to verify the live flow.
+
+Never add Supabase credentials to Git, `render.yaml`, or frontend environment variables. Render Web Services accept public WebSocket connections, which is required by the live room experience. [Render’s Blueprint reference](https://render.com/docs/blueprint-spec) and [WebSocket documentation](https://render.com/docs/websocket) describe these settings.
 
 ## Team
 

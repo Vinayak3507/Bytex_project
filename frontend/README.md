@@ -1,6 +1,6 @@
-# AptiQuiz frontend
+# QUIZRIFT frontend
 
-The frontend is a standalone, demo-ready AptiQuiz experience. It includes the lobby, room join flow, timed match, and live-style leaderboard using mock game data so it can be explored without a backend connection.
+The frontend is a standalone, demo-ready QUIZRIFT experience. It includes the lobby, room join flow, timed match, and live-style leaderboard using mock game data so it can be explored without a backend connection.
 
 ## Run locally
 

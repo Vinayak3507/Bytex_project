@@ -28,13 +28,13 @@ server.on('error', error => {
   if (error.code === 'EADDRINUSE') {
     console.error(`Port ${port} is already in use. Stop the other server or run: node server.js 4174`);
   } else {
-    console.error(`Could not start AptiQuiz: ${error.message}`);
+    console.error(`Could not start QUIZRIFT: ${error.message}`);
   }
   process.exitCode = 1;
 });
 
 server.listen(port, host, () => {
-  console.log(`AptiQuiz is running at http://localhost:${port}`);
+  console.log(`QUIZRIFT is running at http://localhost:${port}`);
   const addresses = Object.values(networkInterfaces()).flat().filter(address => address && address.family === 'IPv4' && !address.internal);
   for (const address of addresses) console.log(`On this network: http://${address.address}:${port}`);
 });

@@ -2,6 +2,9 @@ import { id, joinCode } from '../lib/ids.js';
 
 export class MemoryStore {
   constructor() {
+    this.hosts = new Map();
+    this.hostByEmail = new Map();
+    this.hostSessions = new Map();
     this.questionSets = new Map();
     this.rooms = new Map();
     this.players = new Map();
@@ -9,30 +12,64 @@ export class MemoryStore {
     this.leaguePoints = new Map();
   }
 
-  async createQuestionSet({ title, ownerTokenHash, questions }) {
-    const questionSet = { id: id(), title, ownerTokenHash, createdAt: new Date().toISOString(), questions };
+  async createHost({ email, passwordHash }) {
+    if (this.hostByEmail.has(email)) return { conflict: true };
+    const host = { id: id(), email, passwordHash, createdAt: new Date().toISOString() };
+    this.hosts.set(host.id, host);
+    this.hostByEmail.set(email, host.id);
+    return host;
+  }
+  async getHostByEmail(email) { const hostId = this.hostByEmail.get(email); return hostId ? this.hosts.get(hostId) ?? null : null; }
+  async getHost(hostId) { return this.hosts.get(hostId) ?? null; }
+  async createHostSession({ tokenHash, hostId, expiresAt }) {
+    this.hostSessions.set(tokenHash, { tokenHash, hostId, expiresAt });
+  }
+  async getHostSession(tokenHash, now = Date.now()) {
+    const session = this.hostSessions.get(tokenHash);
+    if (!session || Date.parse(session.expiresAt) <= now) {
+      this.hostSessions.delete(tokenHash);
+      return null;
+    }
+    const host = await this.getHost(session.hostId);
+    return host ? { host, expiresAt: session.expiresAt } : null;
+  }
+  async deleteHostSession(tokenHash) { this.hostSessions.delete(tokenHash); }
+
+  async createQuestionSet({ title, description = '', defaultDurationMs = 20000, defaultMarks = 500, ownerId, questions = [], status = 'draft' }) {
+    const now = new Date().toISOString();
+    const questionSet = { id: id(), title, description, defaultDurationMs, defaultMarks, ownerId, status, createdAt: now, updatedAt: now, questions };
     this.questionSets.set(questionSet.id, questionSet);
     return questionSet;
   }
 
-  async listQuestionSets() {
-    return [...this.questionSets.values()].map(({ ownerTokenHash, questions, ...set }) => ({ ...set, questionCount: questions.length }));
+  async listQuestionSets(ownerId) {
+    return [...this.questionSets.values()].filter((set) => set.ownerId === ownerId).map(({ questions, ownerId: _ownerId, ...set }) => ({ ...set, questionCount: questions.length }));
   }
 
   async getQuestionSet(questionSetId) { return this.questionSets.get(questionSetId) ?? null; }
-  async updateQuestionSet(questionSetId, { title, questions }) {
+  async updateQuestionSet(questionSetId, changes) {
     const questionSet = await this.getQuestionSet(questionSetId);
     if (!questionSet) return null;
-    questionSet.title = title;
-    questionSet.questions = questions;
+    Object.assign(questionSet, changes, { status: 'draft', updatedAt: new Date().toISOString() });
     return questionSet;
   }
+  async publishQuestionSet(questionSetId) {
+    const questionSet = await this.getQuestionSet(questionSetId);
+    if (!questionSet) return null;
+    questionSet.status = 'published';
+    questionSet.updatedAt = new Date().toISOString();
+    return questionSet;
+  }
+  async deleteQuestionSet(questionSetId) {
+    if ([...this.rooms.values()].some((room) => room.questionSetId === questionSetId)) return false;
+    return this.questionSets.delete(questionSetId);
+  }
 
-  async createRoom({ questionSetId, collegeName, seasonName }) {
+  async createRoom({ questionSetId, ownerId, collegeName, seasonName, quizSnapshot }) {
     let code = joinCode();
     while ([...this.rooms.values()].some((room) => room.joinCode === code)) code = joinCode();
     const room = {
-      id: id(), questionSetId, collegeName, seasonName, joinCode: code, status: 'lobby',
+      id: id(), questionSetId, ownerId, collegeName, seasonName, quizSnapshot: structuredClone(quizSnapshot), joinCode: code, status: 'lobby',
       currentQuestionIndex: -1, roundStartedAt: null, roundEndsAt: null, createdAt: new Date().toISOString()
     };
     this.rooms.set(room.id, room);
@@ -41,6 +78,7 @@ export class MemoryStore {
 
   async getRoomByCode(code) { return [...this.rooms.values()].find((room) => room.joinCode === code) ?? null; }
   async getRoom(roomId) { return this.rooms.get(roomId) ?? null; }
+  async listRoomsByOwner(ownerId) { return [...this.rooms.values()].filter((room) => room.ownerId === ownerId).sort((a, b) => b.createdAt.localeCompare(a.createdAt)); }
   async updateRoom(roomId, updates) {
     const room = this.rooms.get(roomId);
     if (!room) return null;

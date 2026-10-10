@@ -3,6 +3,7 @@ import { createServer } from 'node:http';
 import { networkInterfaces } from 'node:os';
 import { extname, join, normalize } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { isStaticAssetPath } from './src/services/staticRouting.js';
 
 const root = fileURLToPath(new URL('.', import.meta.url));
 const port = Number(process.argv[2] || process.env.PORT || 4173);
@@ -11,13 +12,27 @@ const types = { '.css':'text/css; charset=utf-8', '.html':'text/html; charset=ut
 
 const server = createServer((request, response) => {
   const rawPath = decodeURIComponent((request.url || '/').split('?')[0]);
+  if (rawPath === '/runtime-config.js') {
+    const backendUrl = process.env.BACKEND_URL || 'http://localhost:3001';
+    response.writeHead(200, { 'Content-Type':'text/javascript; charset=utf-8', 'Cache-Control':'no-store' });
+    response.end(`window.APTIQUIZ_CONFIG = Object.freeze({ backendUrl: ${JSON.stringify(backendUrl)} });`);
+    return;
+  }
   const requested = rawPath === '/' ? 'index.html' : rawPath.replace(/^\/+/, '');
-  const target = normalize(join(root, requested));
+  let target = normalize(join(root, requested));
 
-  if (!target.startsWith(root) || !existsSync(target) || statSync(target).isDirectory()) {
+  if (!target.startsWith(root)) {
     response.writeHead(404, { 'Content-Type':'text/plain; charset=utf-8' });
     response.end('Not found');
     return;
+  }
+  if (!existsSync(target) || statSync(target).isDirectory()) {
+    if (isStaticAssetPath(rawPath)) {
+      response.writeHead(404, { 'Content-Type':'text/plain; charset=utf-8' });
+      response.end('Not found');
+      return;
+    }
+    target = join(root, 'index.html');
   }
 
   response.writeHead(200, { 'Content-Type':types[extname(target)] || 'application/octet-stream', 'Cache-Control':'no-store' });

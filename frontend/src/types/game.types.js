@@ -2,5 +2,5 @@
 export const GamePhase = Object.freeze({ LOBBY: 'lobby', PLAYING: 'playing', ROUND_RESULTS: 'round-results', RESULTS: 'results' });
 
 /** @typedef {{id:string, name:string, college:string, score:number, avatar:string, color:string, answered?:boolean}} Player */
-/** @typedef {{id:string, category:string, prompt:string, options:string[], answerIndex:number, durationSeconds:number}} Question */
-/** @typedef {{code:string, hostId:string, players:Player[], status:'waiting'|'playing'|'finished'}} Room */
+/** @typedef {{id:string, category:string, prompt:string, options:{id:string,text:string}[], durationMs:number, startsAt:number, endsAt:number}} Question */
+/** @typedef {{id:string, joinCode:string, collegeName:string, players:Player[], status:'lobby'|'in_progress'|'round_closed'|'completed'}} Room */

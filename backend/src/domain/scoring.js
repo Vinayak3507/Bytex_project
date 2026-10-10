@@ -1,12 +1,12 @@
 export const ROUND_GRACE_MS = 300;
 
-export const scoreAnswer = ({ isCorrect, receivedAt, startedAt, durationMs, streak }) => {
+export const scoreAnswer = ({ isCorrect, receivedAt, startedAt, durationMs, streak, correctMarks = 500 }) => {
   if (!isCorrect) return 0;
   const elapsedMs = Math.max(0, receivedAt - startedAt);
   const speedRatio = Math.max(0, 1 - elapsedMs / durationMs);
-  const speedBonus = Math.round(speedRatio * 500);
-  const streakBonus = streak >= 3 ? 150 : 0;
-  return 500 + speedBonus + streakBonus;
+  const speedBonus = Math.round(speedRatio * correctMarks);
+  const streakBonus = streak >= 3 ? Math.round(correctMarks * 0.3) : 0;
+  return correctMarks + speedBonus + streakBonus;
 };
 
 export const calculateTopicStats = (answers) => {

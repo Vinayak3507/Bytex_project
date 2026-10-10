@@ -5,14 +5,16 @@ import { ActiveRoom } from './pages/ActiveRoom.js';
 
 const app = document.querySelector('#app');
 let clock;
+let revealTimer;
 
 function render() {
   clearInterval(clock);
+  clearTimeout(revealTimer);
   const { state } = game;
   app.innerHTML = state.screen === 'home' ? Home(state) : state.screen === 'join' ? JoinRoom(state) : ActiveRoom(state);
   bind();
   if (state.screen === 'game' && state.selected === null) clock = setInterval(() => game.tick(), 1000);
-  if (state.screen === 'game' && state.selected !== null) setTimeout(() => game.next(), 1450);
+  if (state.screen === 'game' && state.phase === 'playing' && state.selected !== null) revealTimer = setTimeout(() => game.showLeaderboard(), 1450);
 }
 
 function bind() {
@@ -20,6 +22,7 @@ function bind() {
   document.querySelectorAll('[data-action="host"]').forEach(button => button.addEventListener('click', () => game.host()));
   document.querySelectorAll('[data-action="start"]').forEach(button => button.addEventListener('click', () => game.start()));
   document.querySelectorAll('[data-action="rematch"]').forEach(button => button.addEventListener('click', () => { game.resetMatch(); game.start(); }));
+  document.querySelectorAll('[data-action="next-question"]').forEach(button => button.addEventListener('click', () => game.next()));
   document.querySelectorAll('[data-action="toast"]').forEach(button => button.addEventListener('click', () => game.update({ reaction:'Season standings unlock after the next clash!' })));
   document.querySelectorAll('[data-answer]').forEach(button => button.addEventListener('click', () => game.selectAnswer(Number(button.dataset.answer))));
   document.querySelectorAll('[data-react]').forEach(button => button.addEventListener('click', () => game.update({ reaction:`${button.dataset.react} ${game.state.name} brought the energy!` })));

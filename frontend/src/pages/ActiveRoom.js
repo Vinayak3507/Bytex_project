@@ -23,4 +23,11 @@ export function Results(state) {
   return `${Header('MATCH COMPLETE', 'complete')}<main class="results-page">${burst()}<section class="results-hero"><div class="winner-crown">♛</div><p>THE CLASH IS OVER</p><h1>YOU CAME <em>#${rank}!</em></h1><span>${rank===1?'You own the arena.':'That was a serious round.'} +${state.score-740} points earned.</span><div class="medals">${sorted.slice(0,3).map((player,index)=>`<div class="medal medal-${index+1}"><span>${index===0?'🥇':index===1?'🥈':'🥉'}</span>${player.name}<b>${player.score}</b></div>`).join('')}</div></section><section class="panel final-board"><div class="panel-title"><div><p>FINAL SCOREBOARD</p><h2>Room ${state.roomCode}</h2></div><span>${state.players.length} PLAYERS</span></div>${sorted.map((player,index)=>LeaderboardRow(player,index+1,player.id==='you')).join('')}</section><div class="result-actions"><button class="action lime" data-action="rematch">RUN IT BACK ↻</button><button class="action dark" data-screen="home">BACK TO ARENA</button></div></main>`;
 }
 
-export function ActiveRoom(state) { if (state.phase === GamePhase.PLAYING) return Game(state); if (state.phase === GamePhase.RESULTS) return Results(state); return Lobby(state); }
+export function RoundLeaderboard(state) {
+  const sorted = [...state.players].sort((a,b)=>b.score-a.score);
+  const rank = sorted.findIndex(player=>player.id==='you')+1;
+  const lastQuestion = state.questionIndex === state.questions.length - 1;
+  return `${Header(`QUESTION ${state.questionIndex+1} RESULTS`, 'complete')}<main class="results-page"><section class="results-hero"><div class="winner-crown">⚡</div><p>EVERY ANSWER IS IN</p><h1>ROUND <em>RANKINGS</em></h1><span>You placed #${rank} after question ${state.questionIndex+1}. Here are the updated standings for all ${sorted.length} players.</span></section><section class="panel final-board"><div class="panel-title"><div><p>LIVE ROOM STANDINGS</p><h2>Room ${state.roomCode}</h2></div><span>${sorted.length} PLAYERS</span></div>${sorted.map((player,index)=>LeaderboardRow(player,index+1,player.id==='you')).join('')}</section><div class="result-actions"><button class="action lime" data-action="next-question">${lastQuestion?'VIEW FINAL RESULTS':'NEXT QUESTION →'}</button></div></main>`;
+}
+
+export function ActiveRoom(state) { if (state.phase === GamePhase.PLAYING) return Game(state); if (state.phase === GamePhase.ROUND_RESULTS) return RoundLeaderboard(state); if (state.phase === GamePhase.RESULTS) return Results(state); return Lobby(state); }

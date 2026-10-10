@@ -1,0 +1,1 @@
+export const TimerBar = (seconds, total) => `<div class="timer-wrap"><div><span>TIME LEFT</span><strong class="${seconds <= 5?'danger':''}">00:${String(seconds).padStart(2,'0')}</strong></div><div class="timer-track"><i style="width:${Math.max(0, seconds / total * 100)}%"></i></div></div>`;

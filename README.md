@@ -1,31 +1,41 @@
-# AptiQuiz
+# AptiQuiz — AI Hackathon 2026
 
-AptiQuiz is a live, multiplayer aptitude quiz built around a college competition. Hosts create rooms, players join with a short code, and the server owns the question timer, answer acceptance, scoring, and standings.
+AptiQuiz is a live, multiplayer aptitude quiz built around college competition. Hosts create rooms, players join with a short code, and the server owns the question timer, answer acceptance, scoring, and standings.
 
-## Frontend
+## Current frontend
 
-The client lives in `frontend/` and includes a league dashboard, room join flow, lobby, timed question view, live score feedback, reactions, and final standings. Because it uses JavaScript modules, open it through the local server below instead of opening `index.html` as a file.
+The `frontend/` folder contains a gamified dashboard, room join flow, lobby, timed questions, score feedback, reactions, and final standings. It currently runs in mock mode; its Socket.IO adapter and REST paths are not yet connected to the backend contract.
 
-The frontend follows the planned structure inside `frontend/src/`: shared contracts in `types/`, mock payloads in `mocks/`, a socket adapter in `contexts/`, game state in `hooks/`, API calls in `services/`, reusable UI in `components/`, and page views in `pages/`.
-
-The backend adapter is in `frontend/src/services/api.js`, and the socket event names are in `frontend/src/types/socket.types.js`. Replace the placeholder REST paths and connect the Socket.IO client when the backend contract is finalized.
-
-### Run locally
-
-Run the frontend server, then open the displayed address in a browser:
+Run it with Node.js (no package installation is required):
 
 ```bash
 cd frontend
+npm start
+```
+
+Open the URL printed by the server, normally `http://localhost:4173`. The server also prints a LAN URL for testing from another device on the same Wi-Fi. If port 4173 is occupied, run `node server.js 5000`.
+
+## Backend and database
+
+The backend requires Node.js 20+ and uses Express, Socket.IO, and Supabase Postgres.
+
+```bash
+cd backend
+cp .env.example .env
+npm install
+npm test
 npm run dev
 ```
 
-This uses Node's built-in HTTP server and needs no package installation. Keep the terminal open while using the site. Open the `http://localhost:4173` address it prints. The server also prints a network address for opening the site from another device on the same Wi-Fi. If port 4173 is occupied, run `node server.js 5000` and use the address printed for port 5000.
+Without Supabase environment variables, the server uses in-memory storage for local integration; that data resets when the server restarts. For persistent storage, apply [`supabase/migrations/202610100001_aptiquiz.sql`](supabase/migrations/202610100001_aptiquiz.sql), then set `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` in `backend/.env`. Keep the service-role key on the backend only.
 
-For deployment, upload the full `frontend/` folder to a static host such as Vercel, Netlify, or GitHub Pages.
+The server runs at `http://localhost:3001` by default. Set `CLIENT_ORIGIN=http://localhost:4173` (or your deployed frontend URL) to allow browser requests from the frontend.
 
-## Backend and data
+See [`docs/architecture.md`](docs/architecture.md) for the REST and Socket.IO contract. The backend tests cover question-set creation, room creation, joining, server-timed rounds, answer submission, and withholding the correct answer until a round closes.
 
-Backend and data-service setup is being finalized. Keep secrets in local environment files and never commit API keys or `.env` files.
+## Deployment
+
+The frontend can be served as static files; the backend needs a persistent Node.js service for Socket.IO. Deployment URL: to be added.
 
 ## Team
 

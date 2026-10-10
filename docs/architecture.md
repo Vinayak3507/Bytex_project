@@ -75,4 +75,4 @@ or:
 
 ## Integration checkpoint
 
-Run `npm test` from `apps/server`. The HTTP + Socket.IO integration test exercises the same JSON path that the React frontend will use and verifies that correct answers are not leaked before the round closes.
+Run `npm test` from `backend`. The HTTP + Socket.IO integration test exercises the same JSON path that the React frontend will use and verifies that correct answers are not leaked before the round closes.
